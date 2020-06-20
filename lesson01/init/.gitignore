@@ -219,3 +219,6 @@ tags
 ### APPEND
 .pyc
 .venv
+__pycache__*
+.idea
+*.idea/*
