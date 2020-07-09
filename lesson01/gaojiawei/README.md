@@ -1,5 +1,6 @@
 #### USE_L10N = False用途
-https://docs.djangoproject.com/zh-hans/2.2/ref/settings/#std:setting-USE_TZ
+##### https://docs.djangoproject.com/zh-hans/2.2/ref/settings/#std:setting-USE_TZ
+
 默认值：False
 A boolean that specifies if localized formatting of data will be enabled by default or not. If this is set to True, e.g. Django will display numbers and dates using the format of the current locale.
 ```
