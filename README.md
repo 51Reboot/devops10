@@ -1,4 +1,11 @@
 # devops10
 
-- 千万不要提交.venv虚拟环境.
-- 最晚提交作业时间, 每周六19点.
+## git基本操作
+
+```bash
+$ git pull
+$ git add xxx || git add .
+$ git commit -m '本次提交commit的message信息'
+$ git push -u origin master
+```
+
