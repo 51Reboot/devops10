@@ -9,6 +9,8 @@
 - Fields options
 - Field types
 
+[Django 2.2](https://docs.djangoproject.com/en/3.0/ref/models/fields/)
+
 ## 本次作业点评
 
 | 用户名 | 评分 | 结论 |
