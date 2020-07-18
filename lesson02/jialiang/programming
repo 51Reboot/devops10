@@ -1,0 +1,9 @@
+个人理解 declarative programming 是相对更高层面的编程
+Declarative programming 声明式:
+蔬菜.做成菜(蔬菜沙拉)
+-------------------------
+Imperative programming 命令式:
+洗干净(蔬菜)
+混合(蔬菜, 沙拉)
+放入盘中(混合物)
+
