@@ -1,0 +1,150 @@
+#Fields options 字段选项
+##null
+- 此字段是否接受存储空值NULL，默认False
+- 基于字符串的字段，如CharField和TextField，避免使用null
+- null与数据库相关
+
+##blank
+- 此字段是否接受存储空白内容，默认False
+- 不同于null，blank与（表单）验证相关
+
+##choices
+- 以选项的方式作为此字段的候选值
+- 为一个可迭代的2维元组，每个元组中的第一个元素是数据库实际存储的值，第二个元素是可读名称
+
+##db_column
+- 用于此字段的数据库列的名称，如果没有给出，将使用该字段的名称
+
+##db_index
+- 如果Ture，为该字段创建一个数据库索引
+
+##default
+- 设置字段的默认值
+- default不能是可变对象（如模型实例，list，set等）
+
+##editable
+- 如果False，该字段不会显示在Admin或任何其他ModelForm，在模型验证期间会被跳过
+- 默认True
+
+##error_messages
+- 该参数可用覆盖该字段将引发的默认错误消息
+
+##help-text
+- 字段的求助信息
+- 可用于文档中Description部分的描述说明
+
+## primary_key
+- 如果True，该字段为模型主键，一个对象只允许有一个主键
+- 一般情况下，django会为模型自动添加一个叫id的字段并作为主键
+
+##unique
+- 设置此字段是否为唯一值（整个表中），默认值False
+
+##unique_for_date
+- 对于DateField或DateTimeField，要求该字段的日期是唯一的。
+
+##unique_for_month
+- 类似于unique_for_date，但要求该字段相对于月份是唯一的
+
+##unique_for_year
+- 类似于unique_for_date和unique_for_month
+
+##verbose_name
+- 设置该字段的人类可读名称
+
+##validators
+- 为该字段运行验证程序列表
+
+
+
+#Field types 字段类型
+##AutoField
+- 根据id自增长的IntegerField字段
+
+##BigAutoField
+- 64位整数，类似于AutoField
+- 范围从1~9223372036854775807
+
+##BigIntegerField
+- 64位的大整数，类似于IntegerField
+- 范围从-9223372036854775808~9223372036854775807
+
+##BinaryField
+- 二进制字段
+
+##BooleanField
+- 布尔型字段,只有True或False两种，不允许null
+
+##CharField
+- 字符串字段，创建时需要写入max_length参数
+
+##DateField
+- 日期格式，该字段利用datetime.date实例来表示日期
+
+##DateTimeField
+- 日期时间格式，该字段利用datetime.datetime实例表示日期和时间
+
+##DecimalField
+- 十进制数
+
+##DurationField
+- 持续时间类型，存储一定期间的时间长度
+
+##EmailField
+- 用来输入的检测邮箱地址格式是否合法
+
+##FileField
+- 文件上传字段
+
+##FilePathField
+- 用来选择文件系统下某个目录里面的某些文件
+- 必需参数path，为目录的绝对路径
+
+##FloatField
+- 浮点数字段
+
+##ImageField
+- 验证上传对象是否为合法的图像文件，需要指定upload_to上传文件的目录（相对于MEDIA_ROOT目录下的子目录）
+- 如果设置了height_field, width_field，会自动对图片进行缩放后再保持
+
+##IntegerField
+- 整数字段，通用性最高的整数格式
+
+##GenericIPAddressField
+- IPv4和IPv6地址字段
+
+##NullBooleanField
+- 与BooleanField类似，但多了一个NULL选项
+- 建议用该字段代替使用null=True 
+
+##PositiveIntegerfield
+- 正整数字段，和IntegerField类似，但字段值必须是非负数
+
+##PositiveSmallIntegerField
+- 和PositiveIntegerField类似，但数值的取值范围较小，受限于数据库设置
+
+##SlugField
+- 和CharField一样，通常用来作为网址的一部分
+
+##SmallAutoField
+- 类似于AutoField
+
+##SmallIntegerField
+- 和IntegerField类似，但数值的取值范围较小，受限于数据库的限制
+
+##TextField
+- 文本字段，长文字格式
+
+##TimeField
+- 该字段使用 Python 的 datetime.time 实例来表示时间
+
+##URLField
+- 和CharField一样，用来记录完整的URL网址
+
+##UUIDField
+- 用来存储UUID的字段
+
+
+
+
+
