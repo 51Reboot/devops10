@@ -1,0 +1,268 @@
+null¶
+Field.null¶
+如果为True，则Django将NULL在数据库中存储空值。默认值为False。
+
+避免null在基于字符串的字段（例如 CharField和）上使用TextField。如果基于字符串的字段具有 null=True，则表示它具有两个“无数据”的可能值：NULL和空字符串。在大多数情况下，为“无数据”使用两个可能的值是多余的；Django约定是使用空字符串，而不是 NULL。一个例外是当a同时CharField具有unique=True 和blank=Trueset时。在这种情况下，null=True需要使用多个空值保存多个对象时避免违反唯一约束。
+
+对于基于字符串的字段和基于非字符串的字段，blank=True如果您希望在表单中允许使用空值，还需要进行设置，因为该 null参数仅影响数据库存储（请参阅参考资料blank）。
+
+注意
+
+使用Oracle数据库后端时，NULL无论此属性如何，该值都将存储为表示空字符串。
+
+blank¶
+Field.blank¶
+如果为True，则该字段允许为空白。默认值为False。
+
+请注意，这与有所不同null。null与数据库完全相关，而blank与验证相关。如果字段包含blank=True，则表单验证将允许输入一个空值。如果字段包含blank=False，则将需要该字段。
+
+choices¶
+Field.choices¶
+本身由恰好两个项目（例如）的可迭代数组成 的序列，可以用作此字段的选择。如果给出了选择，则模型验证将强制执行这些选择，并且默认表单小部件将是具有这些选择的选择框，而不是标准文本字段。[(A, B), (A, B) ...]
+
+每个元组中的第一个元素是要在模型上设置的实际值，第二个元素是人类可读的名称。例如：
+
+YEAR_IN_SCHOOL_CHOICES = [
+    ('FR', 'Freshman'),
+    ('SO', 'Sophomore'),
+    ('JR', 'Junior'),
+    ('SR', 'Senior'),
+    ('GR', 'Graduate'),
+]
+通常，最好在模型类中定义选择，并为每个值定义一个适当命名的常量：
+
+from django.db import models
+
+class Student(models.Model):
+    FRESHMAN = 'FR'
+    SOPHOMORE = 'SO'
+    JUNIOR = 'JR'
+    SENIOR = 'SR'
+    GRADUATE = 'GR'
+    YEAR_IN_SCHOOL_CHOICES = [
+        (FRESHMAN, 'Freshman'),
+        (SOPHOMORE, 'Sophomore'),
+        (JUNIOR, 'Junior'),
+        (SENIOR, 'Senior'),
+        (GRADUATE, 'Graduate'),
+    ]
+    year_in_school = models.CharField(
+        max_length=2,
+        choices=YEAR_IN_SCHOOL_CHOICES,
+        default=FRESHMAN,
+    )
+
+    def is_upperclass(self):
+        return self.year_in_school in {self.JUNIOR, self.SENIOR}
+虽然您可以在模型类外部定义一个选择列表，然后再引用它，但是在模型类内部定义每个选择的选择和名称，会将所有信息保留在使用它的类中，并有助于引用选择（例如，Student.SOPHOMORE 将Student在导入模型的任何地方工作）。
+
+您还可以将可用选项收集到命名组中，以用于组织目的：
+
+MEDIA_CHOICES = [
+    ('Audio', (
+            ('vinyl', 'Vinyl'),
+            ('cd', 'CD'),
+        )
+    ),
+    ('Video', (
+            ('vhs', 'VHS Tape'),
+            ('dvd', 'DVD'),
+        )
+    ),
+    ('unknown', 'Unknown'),
+]
+每个元组中的第一个元素是应用于组的名称。第二个元素是2元组的可迭代对象，每个2元组包含一个值和一个选项的易于理解的名称。可以将组合选项与未组合选项组合在一个列表中（例如'unknown'本示例中的 选项）。
+
+对于已choices设置的每个模型字段，Django将添加一个方法来检索该字段的当前值的可读名称。请参见 get_FOO_display()数据库API文档。
+
+请注意，选择可以是任何序列对象-不一定是列表或元组。这使您可以动态构造选择。但是，如果您发现黑客攻击choices是动态的，那么最好使用带有的适当数据库表ForeignKey。choices用于静态数据，该静态数据不会发生太大变化。
+
+注意
+
+每次choices更改顺序都会创建一个新的迁移。
+
+除非blank=False在字段中与一起设置， 否则default包含的标签"---------"将与选择框一起呈现。要覆盖此行为，添加一个元组choices 包含None; 例如。或者，您可以使用空字符串代替有意义的位置-例如在上。(None, 'Your String For Display')NoneCharField
+
+枚举类型¶
+此外，Django提供了枚举类型，您可以将其枚举为子类，以简洁的方式定义选择：
+
+from django.utils.translation import gettext_lazy as _
+
+class Student(models.Model):
+
+    class YearInSchool(models.TextChoices):
+        FRESHMAN = 'FR', _('Freshman')
+        SOPHOMORE = 'SO', _('Sophomore')
+        JUNIOR = 'JR', _('Junior')
+        SENIOR = 'SR', _('Senior')
+        GRADUATE = 'GR', _('Graduate')
+
+    year_in_school = models.CharField(
+        max_length=2,
+        choices=YearInSchool.choices,
+        default=YearInSchool.FRESHMAN,
+    )
+
+    def is_upperclass(self):
+        return self.year_in_school in {
+            self.YearInSchool.JUNIOR,
+            self.YearInSchool.SENIOR,
+        }
+这些工作类似于enumPython的标准库，但有一些修改：
+
+枚举成员值是构造具体数据类型时要使用的参数的元组。Django支持在此元组的末尾添加一个额外的字符串值，以用作人类可读的名称或label。该 label可以是一个懒惰的翻译字符串。因此，在大多数情况下，成员值将是一个二元组。有关使用更复杂的数据类型进行子分类选择的示例，请参见下文。如果未提供元组，或最后一个项目是不是一个（懒惰）字符串，该被自动产生从成员名称。(value, label)label
+.label在值上添加一个属性，以返回人类可读的名称。
+许多自定义属性添加到枚举类- ， ，.choices 和-更容易为枚举的这些独立部分的访问列表。使用 作为一个合适的值，以传递到在一个字段定义。.labels.values.names.choiceschoices
+enum.unique()强制使用，以确保不能多次定义值。在选择某个字段时，这不太可能发生。
+请注意，使用YearInSchool.SENIOR，，YearInSchool['SENIOR']或 YearInSchool('SR')访问或查找枚举成员的工作与预期的一样，成员上的.nameand .value属性也是如此。
+
+如果不需要翻译人类可读的名称，则可以从成员名称中推断出它们（用空格替换下划线并使用标题大小写）：
+
+>>> class Vehicle(models.TextChoices):
+...     CAR = 'C'
+...     TRUCK = 'T'
+...     JET_SKI = 'J'
+...
+>>> Vehicle.JET_SKI.label
+'Jet Ski'
+由于枚举值需要为整数的情况非常普遍，因此Django提供了一个IntegerChoices类。例如：
+
+class Card(models.Model):
+
+    class Suit(models.IntegerChoices):
+        DIAMOND = 1
+        SPADE = 2
+        HEART = 3
+        CLUB = 4
+
+    suit = models.IntegerField(choices=Suit.choices)
+还可以使用Enum Functional API，并需要注意的是标签会自动生成，如上面突出显示的那样：
+
+>>> MedalType = models.TextChoices('MedalType', 'GOLD SILVER BRONZE')
+>>> MedalType.choices
+[('GOLD', 'Gold'), ('SILVER', 'Silver'), ('BRONZE', 'Bronze')]
+>>> Place = models.IntegerChoices('Place', 'FIRST SECOND THIRD')
+>>> Place.choices
+[(1, 'First'), (2, 'Second'), (3, 'Third')]
+如果您需要除int或以外的具体数据类型的支持str，则可以子类化Choices所需的具体数据类型，例如 date，用于DateField：
+
+class MoonLandings(datetime.date, models.Choices):
+    APOLLO_11 = 1969, 7, 20, 'Apollo 11 (Eagle)'
+    APOLLO_12 = 1969, 11, 19, 'Apollo 12 (Intrepid)'
+    APOLLO_14 = 1971, 2, 5, 'Apollo 14 (Antares)'
+    APOLLO_15 = 1971, 7, 30, 'Apollo 15 (Falcon)'
+    APOLLO_16 = 1972, 4, 21, 'Apollo 16 (Orion)'
+    APOLLO_17 = 1972, 12, 11, 'Apollo 17 (Challenger)'
+还有一些注意事项：
+
+枚举类型不支持命名组。
+
+由于具有具体数据类型的枚举要求所有值都与该类型匹配， 因此无法通过创建值为的成员来覆盖空白标签None。而是__empty__在类上设置属性：
+
+class Answer(models.IntegerChoices):
+    NO = 0, _('No')
+    YES = 1, _('Yes')
+
+    __empty__ = _('(Unknown)')
+Django 3.0的新功能：
+的TextChoices，IntegerChoices和Choices添加类。
+
+db_column¶
+Field.db_column¶
+用于此字段的数据库列的名称。如果未指定，Django将使用该字段的名称。
+
+如果您的数据库列名称是SQL保留字，或者包含Python变量名称中不允许使用的字符（尤其是连字符），则可以。Django在幕后引用列名和表名。
+
+db_index¶
+Field.db_index¶
+如果为True，将为此字段创建数据库索引。
+
+db_tablespace¶
+Field.db_tablespace¶
+如果此字段已建立索引，则用于该字段的索引的数据库表空间的名称。默认值是项目的 DEFAULT_INDEX_TABLESPACE设置（如果已设置）或 db_tablespace模型的设置（如果有）。如果后端不支持索引的表空间，则忽略此选项。
+
+default¶
+Field.default¶
+字段的默认值。这可以是值或可调用对象。如果可以调用，则每次创建新对象时都会调用它。
+
+默认不能是可变对象（模型实例，list，set等），作为该对象的相同实例的引用将被用作在所有新的模型实例的默认值。而是将所需的默认值包装在可调用中。例如，如果要指定一个默认dict的 JSONField，使用函数：
+
+def contact_default():
+    return {"email": "to1@example.com"}
+
+contact_info = JSONField("ContactInfo", default=contact_default)
+lambda不能用于字段选项，default因为它们不能通过迁移序列化。有关其他注意事项，请参阅该文档。
+
+对于ForeignKey此类映射到模型实例的字段，默认值应为它们引用的字段的值（pk除非 to_field已设置），而不是模型实例。
+
+创建新模型实例且未为该字段提供值时，将使用默认值。如果该字段是主键，则当该字段设置为时，也会使用默认值None。
+
+editable¶
+Field.editable¶
+如果是False，则该字段将不会显示在管理员或其他任何人中 ModelForm。在模型验证期间也将跳过它们。默认值为True。
+
+error_messages¶
+Field.error_messages¶
+该error_messages参数使您可以覆盖该字段将引发的默认消息。输入具有与您要覆盖的错误消息匹配的键的字典。
+
+错误消息键包括null，blank，invalid，invalid_choice， unique，和unique_for_date。在下面的“ 字段类型”部分中为每个字段指定了其他错误消息键。
+
+这些错误消息通常不会传播到表单。请参阅 有关模型的error_messages的注意事项。
+
+help_text¶
+Field.help_text¶
+额外的“帮助”文本将与表单窗口小部件一起显示。即使您的字段未在表单上使用，它对于文档记录也很有用。
+
+请注意，此值不会以自动生成的形式转义为HTML。如果需要，可以将HTML包含在内help_text。例如：
+
+help_text="Please use the following format: <em>YYYY-MM-DD</em>."
+或者，您可以使用纯文本并 django.utils.html.escape()转义任何HTML特殊字符。确保避免转义来自不受信任用户的任何帮助文本，以避免跨站点脚本攻击。
+
+primary_key¶
+Field.primary_key¶
+如果为True，则此字段是模型的主键。
+
+如果您未primary_key=True在模型中指定任何字段，则Django会自动添加一个AutoField用于保留主键的字段，因此您无需primary_key=True在任何字段上进行设置，除非您想覆盖默认的主键行为。有关更多信息，请参见 自动主键字段。
+
+primary_key=True暗示null=False和 unique=True。一个对象只允许使用一个主键。
+
+主键字段是只读的。如果更改现有对象上的主键的值然后保存，则将在旧对象的旁边创建一个新对象。
+
+unique¶
+Field.unique¶
+如果为True，则该字段在整个表格中必须是唯一的。
+
+这是在数据库级别并通过模型验证强制执行的。如果您尝试在unique 字段中保存具有重复值django.db.IntegrityError的模型，则模型的save()方法将引发 a 。
+
+此选项对ManyToManyField和 以外的所有字段类型均有效OneToOneField。
+
+请注意，当unique为is时True，您无需指定 db_index，因为这unique意味着创建了索引。
+
+unique_for_date¶
+Field.unique_for_date¶
+将此设置为的名称，DateField或DateTimeField要求该字段对于日期字段的值是唯一的。
+
+举例来说，如果你有一个字段title有 unique_for_date="pub_date"，那么Django的不允许的两个记录具有相同的入口title和pub_date。
+
+请注意，如果将其设置为指向DateTimeField，则仅考虑字段的日期部分。此外，当USE_TZ是 True时，支票将在执行当前时区的对象被保存的时间。
+
+这是Model.validate_unique()在模型验证期间强制实施的，而不是在数据库级别实施的。如果任何unique_for_date约束涉及不属于的字段ModelForm（例如，如果其中一个字段已列出exclude或具有 editable=False），Model.validate_unique()则将跳过对该特定约束的验证。
+
+unique_for_month¶
+Field.unique_for_month¶
+类似于unique_for_date，但要求该字段相对于月份是唯一的。
+
+unique_for_year¶
+Field.unique_for_year¶
+喜欢unique_for_date和unique_for_month。
+
+verbose_name¶
+Field.verbose_name¶
+该字段的可读名称。如果未提供详细名称，则Django将使用字段的属性名称自动创建，将下划线转换为空格。请参阅详细字段名称。
+
+validators¶
+Field.validators¶
+要为此字段运行的验证器列表。有关更多信息，请参见验证程序文档。
+
+注册并获取查询¶
+Field实现查找注册API。该API可用于自定义哪些查询可用于字段类，以及如何从字段中获取查询
