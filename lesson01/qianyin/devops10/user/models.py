@@ -11,7 +11,7 @@ class UserProfile(AbstractUser):
     job_status = models.BooleanField(default=True, verbose_name='在职状态')
 
     def __str__(self):
-        return self.phone
+        return "{}|{}".format(self.username,self.phone)
 
     class Meta:
         db_table = 'user_profile'
