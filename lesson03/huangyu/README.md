@@ -1,6 +1,8 @@
 Django as_view
 
  @classonlymethod
+ 
+ 
     def as_view(cls, **initkwargs):
         """Main entry point for a request-response process."""
         for key in initkwargs:
@@ -38,7 +40,12 @@ Django as_view
 --------------
 DRF as_view
 
+ 
+ 
+ 
  @classmethod
+ 
+ 
     def as_view(cls, **initkwargs):
         """
         Store the original class on the view function.
