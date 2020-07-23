@@ -3,7 +3,7 @@
 1. Django CBV as_view方法
 
    ```python
-   请求处理由view启用dispatch分发给具体的方法后返回结果
+   请求处理由 as_view 方法中定义的 view 函数调用dispatch分发给具体的方法后返回结果
    1. 先对initkwargs中的key进行判断
      1) 是否是支持的http method
      2) 类中是否有对应的http method的处理函数 
