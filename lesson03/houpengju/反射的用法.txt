@@ -1,0 +1,27 @@
+hasattr(obj,attr) getattr(obj,attr) setattr(obj,attr,val)
+
+class People:
+    def eat(self):
+        print('eat')
+    def drink(self):
+        print('drink')
+    def code(self):
+        print('code')
+		
+p = People()   # p为指向类的实例
+
+hasattr(p,'eat')  # 在实例中是否有eat方法  
+True
+
+hasattr(p,'code') 
+True
+
+getattr(p,'code')  # 在实例中取code方法
+<bound method People.code of <__main__.People object at 0x000001A5E387E4E0>>
+
+code123 = getattr(p,'code')
+code123()      # 调用类的的方法
+code
+setattr(p,'sleep','sleep1234')  # 在实例中设置sleep属性值为"sleep1234"
+p.sleep            # 调用实例内sleep方法
+'sleep1234'
