@@ -1,0 +1,69 @@
+使用视图函数时，django完成URL解析之后，会直接把request对象以及URL解析器捕获的参数（比如re_path中正则表达捕获的位置参数或关键字参数）丢给视图函数，但是在类视图中，这些参数不能直接丢给一个类，所以就有了as_view方法，这个方法只做一件事就是返回一个闭包，这个闭包像视图函数一样接收url解析器传送过来的参数。
+
+先摆个例子放开头，以供参考：
+
+
+from blog.views import IndexView
+
+urlpatterns = [
+    re_path(r"^$", IndexView.as_view(), name="index"),
+]
+
+当启动django项目时，程序执行到urlpatterns时，urlpatterns列表中的各项依次得到执行，由于re_path和path都是对象，当对象像函数一样调用时，其实是调用对象中的__call__方法，执行的结果就是，每个path或re_path的调用都返回一个URLPattern类的实例对象（路径为django.urls.resolvers.URLPattern），如果打印一下re_path的执行结果，得到如下结果：
+
+print(re_path(r"^$", IndexView.as_view(), name="index"))
+执行结果：
+>> <URLPattern '^$' [name='index']>  # 返回一个URLPattern对象
+
+
+2、再来看看上面说的闭包是什么
+
+首先给出as_view方法的完整源码
+
+@classonlymethod
+def as_view(cls, **initkwargs):
+    def view(request, *args, **kwargs):
+        self = cls(**initkwargs)  # 实例化一个类视图对象，cls指的就是我们自定义的类视图，比如开头例子中的IndexView,所以self指的就是IndexView的一个实例
+        if hasattr(self, 'get') and not hasattr(self, 'head'):
+            self.head = self.get
+        self.setup(request, *args, **kwargs)  # 初始化实例属性
+        if not hasattr(self, 'request'):
+            raise AttributeError(
+                "%s instance has no 'request' attribute. Did you override "
+                "setup() and forget to call super()?" % cls.__name__
+            )
+        return self.dispatch(request, *args, **kwargs)
+    return view  # 这就是上面说的闭包
+    
+    
+可以看到as_view的定义中又定义了一个view函数，该函数接收三个参数，第一个是request对象，第二个是url解析器捕获的url中的位置参数，第三个是url解析器捕获的url中的关键字参数。返回的view函数就是上面所说的闭包。
+
+先不看view函数内部的执行逻辑，而只关注django接收到请求后的处理逻辑。当django项目启动，调用path或re_path返回URLPattern实例对象，同时as_view函数得到执行，并返回view函数的引用，传递给URLPattern实例对象的callback属性，此时as_view方法的使命完成，之后每次当django接受到浏览器发来的请求，url解析器解析url后，将request对象和url中捕获的参数传递给匹配到的回调函数（即view函数），由view函数执行后续操作。
+
+3、再看view函数内部执行逻辑
+
+def view(request, *args, **kwargs):
+            self = cls(**initkwargs)  # 实例化一个类视图对象，cls指的是我们自定义的类视图，比如开头例子中的IndexView，所以self指的就是IndexView的一个实例
+            if hasattr(self, 'get') and not hasattr(self, 'head'):
+                self.head = self.get
+            self.setup(request, *args, **kwargs)  # 初始化实例属性
+            if not hasattr(self, 'request'):
+                raise AttributeError(
+                    "%s instance has no 'request' attribute. Did you override "
+                    "setup() and forget to call super()?" % cls.__name__
+                )
+            return self.dispatch(request, *args, **kwargs)
+       view函数主要做了两件事情，一是实例化一个类视图对象，这个容易理解，是哪个类视图对象接收了请求那就实例化哪个。二是调用dispatch方法，根据http请求方法（比如get，post）分派处理函数，dispatch方法逻辑比较简单，但是却是理解类视图执行逻辑的关键点。先看下源码：
+       def dispatch(self, request, *args, **kwargs):
+        # Try to dispatch to the right method; if a method doesn't exist,
+        # defer to the error handler. Also defer to the error handler if the
+        # request method isn't on the approved list.
+        if request.method.lower() in self.http_method_names:  # 把http方法改为小写，并判断该方法是否是合法的http方法
+            handler = getattr(self, request.method.lower(), self.http_method_not_allowed)  # 在类视图中找到对应的处理方法，返回该方法的引用给handler
+        else:
+            handler = self.http_method_not_allowed
+        return handler(request, *args, **kwargs)  # 执行相应的方法
+        
+        
+        如果判断请求方法是合法的，就从我们自定义的类视图对象中获取到该方法，将引用传给handler，然后返回该方法执行的结果。举例：浏览器发送来一个get请求，get存在于http_method_names列表中，所以是个合法的http方法，此时通过getattr获取到自定义类视图中的get方法，并将get方法的引用传给handler（所以我们需要在自定义类视图中定义get方法，否则dispatch找不到get方法，比如开头的例子中，我们需要在IndexView类中定义get方法），最后执行get方法，并返回执行结果。
+        
