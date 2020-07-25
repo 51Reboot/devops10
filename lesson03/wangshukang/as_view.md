@@ -42,6 +42,8 @@
 
 dispatch():
 
+先把request.method(get/post..)转换成小写，然后判断该方法是否在在http_method_names列表中，在列表中默认请求合法，使用了反射来判断类视图中是否有这个方法，有的就将方法的引用给handler，没有则将http_method_not_allowed引用给handler，请求不合法就将将http_method_not_allowed引用给handler，最后执行相应的方法
+
 ```python
 def dispatch(self, request, *args, **kwargs):
     # Try to dispatch to the right method; if a method doesn't exist,
@@ -68,7 +70,7 @@ def as_view(cls, **initkwargs):
     This allows us to discover information about the view when we do URL
     reverse lookups.  Used for breadcrumb generation.
     """
-    if isinstance(getattr(cls, 'queryset', None), models.query.QuerySet):
+    if isinstance(getattr(cls, 'queryset', None), models.query.QuerySet): #判断当前类中是否有queryset方法，没有执行跳过
         def force_evaluation():
             raise RuntimeError(
                 'Do not evaluate the `.queryset` attribute directly, '
@@ -77,12 +79,71 @@ def as_view(cls, **initkwargs):
             )
         cls.queryset._fetch_all = force_evaluation
 
-    view = super().as_view(**initkwargs)
+    view = super().as_view(**initkwargs) #继承父类as_view方法，在as_view中会调用dispatch方法，这个方法，当前类中是有的，直接调用当前类的dispatch方法
     view.cls = cls
     view.initkwargs = initkwargs
 
     # Note: session based authentication is explicitly CSRF validated,
     # all other authentication is CSRF exempt.
-    return csrf_exempt(view)
+    return csrf_exempt(view) #解除csrf限制
+```
+
+
+
+drf dispatch():
+
+```python
+ def dispatch(self, request, *args, **kwargs):
+        """
+        `.dispatch()` is pretty much the same as Django's regular dispatch,
+        but with extra hooks for startup, finalize, and exception handling.
+        """
+        #赋值对request方法的包装
+        self.args = args
+        self.kwargs = kwargs
+        request = self.initialize_request(request, *args, **kwargs)
+        self.request = request
+        self.headers = self.default_response_headers  # deprecate?
+
+        try:
+            self.initial(request, *args, **kwargs) #调用initial，检查不通过会抛出异常
+
+            # Get the appropriate handler method
+            if request.method.lower() in self.http_method_names: #request.method转换成小写判断是否在http_method_names列表中，在通过反射来判断是否在实例的方法中
+                handler = getattr(self, request.method.lower(),
+                                  self.http_method_not_allowed)
+            else:
+                handler = self.http_method_not_allowed
+
+            response = handler(request, *args, **kwargs)
+
+        except Exception as exc:
+            response = self.handle_exception(exc)
+
+        self.response = self.finalize_response(request, response, *args, **kwargs)
+        return self.response #渲染出一个画面
+```
+
+
+
+```python
+    def initial(self, request, *args, **kwargs):
+        """
+        Runs anything that needs to occur prior to calling the method handler.
+        """
+        self.format_kwarg = self.get_format_suffix(**kwargs)
+
+        # Perform content negotiation and store the accepted info on the request
+        neg = self.perform_content_negotiation(request)
+        request.accepted_renderer, request.accepted_media_type = neg
+
+        # Determine the API version, if versioning is in use.
+        version, scheme = self.determine_version(request, *args, **kwargs)
+        request.version, request.versioning_scheme = version, scheme
+
+        # Ensure that the incoming request is permitted
+        self.perform_authentication(request) #认证
+        self.check_permissions(request) #权限
+        self.check_throttles(request) #频率
 ```
 
