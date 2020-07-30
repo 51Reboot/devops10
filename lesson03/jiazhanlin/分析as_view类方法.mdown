@@ -2,6 +2,8 @@
 # 分析as_view类方法
 
 ## Django的as_view
+
+```python
 @classonlymethod
 def as_view(cls, **initkwargs):
     """Main entry point for a request-response process."""
@@ -45,9 +47,11 @@ def as_view(cls, **initkwargs):
     # like csrf_exempt from dispatch
     update_wrapper(view, cls.dispatch, assigned=())
         return view
-
+```
 
 ## DRF的as_view
+
+```python
 @classmethod
 def as_view(cls, **initkwargs):
     """
@@ -75,3 +79,4 @@ def as_view(cls, **initkwargs):
     # all other authentication is CSRF exempt.
     # 所有视图都可以被跨域访问
     return csrf_exempt(view)
+```
