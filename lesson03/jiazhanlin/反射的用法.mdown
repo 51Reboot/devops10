@@ -1,0 +1,56 @@
+# 反射的用法
+
+## getattr
+- Return the value of the named attribute of object. name must be a string. If the string is the name of one of the object's attributes, the result is the value of that attribute. For example, getattr(x, 'foobar') is equivalent to x.foobar. if the named attribute does not exist, default is returned if provided, otherwise AttributeError is raised.
+- getattr(object，name[, default])：获取对象的属性值，若该属性不存在，又没有提供默认值，会抛AttributeError异常    # name参数必须以“字符串”形式传参，hasattr和setattr同样
+
+class ClsTest(object):
+    name = '51reboot'
+
+    def func1(self):
+        return 'hello, world'
+
+    @classmethod
+    def func2(cls):
+        return 'hello, 51reboot!'
+
+clstest = ClsTest()
+print(getattr(clstest, 'name'))               # 获取name变量的值，==clsTest.value
+print(getattr(clstest, 'age'))                # 获取age变量的值, 不存在报错
+print(getattr(clstest, 'age', 20))            # 获取age变量的值, 不存在会返回设置的默认值20
+print(getattr(clstest, 'func1'))              # 返回方法的内存地址
+print(getattr(ClsTest(), 'func1')())          # 获取fun1函数的值
+print(getattr(ClsTest, 'func2')())            # 获取fun2函数的值
+
+## hasattr
+
+- The arguments are an object and a string. The result is True if the string is the name of the object's attributes, False if not. (This is implemented by calling getattr(object, name)) and seeing whether it raises an AttributeError or not)
+参数是一个对象和一个字符串，如果字符串是对象的属性值，函数返回True,反之返回False.(这是通过调用getattr(object, name)函数，并判断是否抛出AttributeError错误实现的)。
+
+- hasattr(object，name)：用于判断对象是否包含对应的属性（包含变量和方法）
+
+print(hasattr(clstest, 'name'))               # 判断是否包含name属性,存在就返回True，反之返回False.
+
+## setattr
+- This is the counterpart of getattr(). The arguments are an object, a string and an arbitrary value. The string may name an existing attribute or a new attribute. The function assigns the value to the attribute, provided the object allows it. For example, setattr(x, 'foobar', 123) is equivalent to x.foobar = 123.
+- setattr(object, name, value)：给对象的属性赋值，若属性不存在，先创建这个属性再赋值
+
+print(hasattr(clstest, 'age'))                # False
+setattr(clstest, 'age', 30)                   # age属性不存在，创建该属性并赋值给定的value
+print(getattr(clstest, 'age'))                # 30
+setattr(clstest, 'name', 'andylin')           # 给属性name重新赋值
+print(getattr(clstest, 'name'))               # andylin
+
+## delattr
+- This is a relative of setattr(). The arguments are an object and a string. The string must be the name of one of the object’s attributes. The function deletes the named attribute, provided the object allows it. For example, delattr(x, 'foobar') is equivalent to del x.foobar.
+- delattr(object, name)：删除指定对象的指定名称的属性，和setattr函数作用相反。
+
+delattr(clstest, 'age')                       # 只能删除用setattr创建的属性
+print(hasattr(clstest, 'age'))                # False，删除成功
+delattr(clstest, 'name')
+print(hasattr(clstest, 'name'))               # True，未删除成功
+print(getattr(clstest, 'name'))               # 51reboot
+delattr(clstest, 'func1')                     # 不能删除对象的方法，会报错
+
+
+  
