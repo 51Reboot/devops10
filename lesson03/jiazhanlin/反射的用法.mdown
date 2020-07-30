@@ -2,7 +2,6 @@
 
 ## getattr(object，name[, default])：获取对象的属性值，若该属性不存在，又没有提供默认值，会抛AttributeError异常
 - Return the value of the named attribute of object. name must be a string. If the string is the name of one of the object's attributes, the result is the value of that attribute. For example, getattr(x, 'foobar') is equivalent to x.foobar. if the named attribute does not exist, default is returned if provided, otherwise AttributeError is raised.
-- getattr(object，name[, default])：获取对象的属性值，若该属性不存在，又没有提供默认值，会抛AttributeError异常    # name参数必须以“字符串”形式传参，hasattr和setattr同样
 
 ```python
 class ClsTest(object):
