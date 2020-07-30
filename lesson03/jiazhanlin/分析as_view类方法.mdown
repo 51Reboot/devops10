@@ -14,17 +14,17 @@ def as_view(cls, **initkwargs):
             raise TypeError("You tried to pass in the %s method name as a "
                             "keyword argument to %s(). Don't do that."
                             % (key, cls.__name__))
-         # 判断当前视图类是否存在接收到的请求，没有会引发TypeError异常
+         # 判断当前类视图是否存在接收到的请求，没有会引发TypeError异常
         if not hasattr(cls, key):
             raise TypeError("%s() received an invalid keyword %r. as_view "
                             "only accepts arguments that are already "
                             "attributes of the class." % (cls.__name__, key))
 
-    # 增加属性，调用dispatch方法                        
+    # 使用装饰器                   
     def view(request, *args, **kwargs):
     	# 创建一个当前类视图的实例对象
         self = cls(**initkwargs)
-        # 如果请求中只有get请求没有head请求，把head请求定义为get请求
+        # 如果请求中只有get请求没有head请求，就把head请求定义为get请求
         if hasattr(self, 'get') and not hasattr(self, 'head'):
             self.head = self.get
         # 把参数request, args, kwargs封装到当前类视图中
