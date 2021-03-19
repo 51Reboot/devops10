@@ -1,4 +1,4 @@
-Django==2.2
+Django==2.2.18
 mysqlclient==2.0.1
 PyMySQL==0.9.3
 pytz==2020.1
