@@ -8,7 +8,7 @@ coreapi==2.3.3
 coreschema==0.0.4
 Django==2.2
 django-jsonfield==1.4.0
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 djangorestframework-jwt==1.11.0
 drf-extensions==0.6.0
 future==0.18.2
