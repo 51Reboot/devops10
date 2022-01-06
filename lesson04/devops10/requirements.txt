@@ -1,7 +1,7 @@
 amqp==2.6.0
 billiard==3.6.3.0
 casbin==0.8.4
-celery==4.4.6
+celery==5.2.2
 certifi==2020.6.20
 chardet==3.0.4
 coreapi==2.3.3
