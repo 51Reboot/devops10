@@ -22,7 +22,7 @@ Jinja2==2.11.2
 kombu==4.6.11
 MarkupSafe==1.1.1
 packaging==20.4
-PyJWT==1.7.1
+PyJWT==2.4.0
 PyMySQL==0.9.3
 pyparsing==2.4.7
 pytz==2020.1
